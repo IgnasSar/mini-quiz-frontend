@@ -27,13 +27,14 @@ export default function Quiz() {
   }, []);
 
   const handleAnswer = (isCorrect) => {
-    if (isCorrect) setScore((prev) => prev + 1);
+    const nextScore = isCorrect ? score + 1 : score;
+    setScore(nextScore);
 
     setTimeout(() => {
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex((prev) => prev + 1);
       } else {
-        navigate("/result", { state: { score, total: questions.length } });
+        navigate("/result", { state: { score: nextScore, total: questions.length } });
       }
     }, 400);
   };

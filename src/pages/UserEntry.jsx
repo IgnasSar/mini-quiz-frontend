@@ -18,13 +18,13 @@ export default function UserEntry() {
     }
 
     try {
-      const res = await api.post("/User", { name, email, score: 0, timeTaken: 0 });
-      const user = res?.data || { id: null, name, email, score: 0, timeTaken: 0 };
+      const res = await api.post("/User", { name, email});
+      const user = res?.data || { id: null, name, email};
       localStorage.setItem("user", JSON.stringify(user));
       navigate("/quiz");
     } catch (err) {
       console.error(err);
-      const fallbackUser = { id: null, name, email, score: 0, timeTaken: 0 };
+      const fallbackUser = { id: null, name, email};
       localStorage.setItem("user", JSON.stringify(fallbackUser));
       setError("Server connection failed — using local fallback. Proceeding to quiz.");
       setTimeout(() => navigate("/quiz"), 900);
