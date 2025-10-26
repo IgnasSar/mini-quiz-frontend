@@ -1,0 +1,30 @@
+.add-container {
+  min-height: 100vh;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-card textarea,
+.add-card input {
+  background: #0f172a;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.add-card button {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.add-card button:hover {
+  background: #4f46e5;
+}
