@@ -15,6 +15,9 @@ export default function TopNav() {
         <Link to="/add" className="btn-primary">
           + Add Question
         </Link>
+        <Link to="/delete" className="btn">
+          🗑 Delete Question
+        </Link>
       </div>
     </nav>
   );

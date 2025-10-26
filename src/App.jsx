@@ -3,6 +3,7 @@ import UserEntry from "./pages/UserEntry";
 import Quiz from "./pages/Quiz";
 import TopNav from "./components/TopNav";
 import AddQuestion from "./pages/AddQuestion";
+import DeleteQuestion from "./pages/DeleteQuestion";
 import Result from "./pages/Result";
 import "./styles/globals.css";
 
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/" element={<UserEntry />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/add" element={<AddQuestion />} />
+            <Route path="/delete" element={<DeleteQuestion />} />
             <Route path="/result" element={<Result />} />
           </Routes>
         </div>

@@ -34,7 +34,7 @@ export default function UserEntry() {
   return (
     <div className="entry-container">
       <div className="entry-card">
-        <h1 className="entry-title">🌙 Mini Quiz</h1>
+        <h1 className="entry-title">Mini Quiz</h1>
         <p className="entry-subtitle">Enter your details to begin</p>
 
         {error && <div className="entry-error">{error}</div>}

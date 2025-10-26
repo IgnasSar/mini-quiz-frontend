@@ -125,7 +125,11 @@ export default function QuestionFormModal({ onClose }) {
             <option value={4}>Answer 4</option>
           </select>
 
-          <button type="submit" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary"
+          >
             {loading ? "Saving..." : "Save Question"}
           </button>
 

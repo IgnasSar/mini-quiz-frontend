@@ -44,7 +44,6 @@ export default function AddQuestion() {
           option3: "",
           option4: "",
           answer: 1,
-          imageName: "",
         });
       } else {
         setMessage("Failed to add question.");
@@ -75,8 +74,6 @@ export default function AddQuestion() {
           <input name="option2" placeholder="Option 2" value={form.option2} onChange={handleChange} required />
           <input name="option3" placeholder="Option 3" value={form.option3} onChange={handleChange} required />
           <input name="option4" placeholder="Option 4" value={form.option4} onChange={handleChange} required />
-
-          <input name="imageName" placeholder="Optional: image file name (server static path)" value={form.imageName} onChange={handleChange} />
 
           <select name="answer" value={form.answer} onChange={handleChange}>
             <option value={1}>Answer 1</option>
