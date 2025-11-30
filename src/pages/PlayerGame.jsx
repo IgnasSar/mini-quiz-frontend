@@ -32,10 +32,7 @@ export default function PlayerGame() {
 
     conn.start().then(async () => {
         const success = await conn.invoke("JoinRoom", roomCode, user.name, sessionStorage.getItem("currentAvatar"));
-        if (!success) {
-            alert("Room closed or unavailable.");
-            navigate("/dashboard");
-        }
+        if (!success) { navigate("/dashboard"); }
     }).catch(console.error);
     
     conn.on("ReceiveQuestion", (data) => {
@@ -57,12 +54,13 @@ export default function PlayerGame() {
     conn.on("ShowAnswers", (ans) => {
         setCorrectAnswer(ans);
         setIsReviewing(true);
+        setTimeLeft(0);
     });
     
     conn.on("GameOver", (res) => setGameResult(res));
     
     conn.on("SessionEnded", () => {
-        alert("The host has ended the session.");
+        alert("Session ended by host.");
         navigate("/dashboard");
     });
     
@@ -86,12 +84,9 @@ export default function PlayerGame() {
   const sendResultsEmail = async () => {
       try {
           const user = JSON.parse(sessionStorage.getItem("user"));
-          await api.post("/Game/send-results", { 
-              roomCode: roomCode,
-              email: user.email 
-          });
+          await api.post("/Game/send-results", { roomCode, email: user.email });
           setEmailSent(true);
-      } catch (err) { alert("Failed to send email"); }
+      } catch (err) { alert("Failed"); }
   };
 
   if (gameResult) {
@@ -104,13 +99,7 @@ export default function PlayerGame() {
               <h2>Session Complete!</h2>
               <div style={{fontSize:'3rem', fontWeight:'bold', margin:'1rem 0'}}>#{myResult?.rank || '-'}</div>
               <div style={{fontSize:'1.5rem', color:'var(--primary)'}}>{myResult?.score || 0} Points</div>
-              
-              {!emailSent ? (
-                  <button className="btn-outline" onClick={sendResultsEmail} style={{marginTop:'2rem'}}>
-                      Email Me Results
-                  </button>
-              ) : <p style={{color:'var(--success)', marginTop:'2rem'}}>Email Sent!</p>}
-              
+              {!emailSent ? <button className="btn-outline" onClick={sendResultsEmail} style={{marginTop:'2rem'}}>📧 Email Results</button> : <p style={{color:'var(--success)', marginTop:'2rem'}}>Sent!</p>}
               <button className="btn-main" onClick={() => navigate("/dashboard")} style={{marginTop:'1rem'}}>Exit</button>
           </div>
         </div>
@@ -122,34 +111,21 @@ export default function PlayerGame() {
   return (
     <div className="page-wrapper">
       <div className="game-layout">
-        
         <div className="game-header">
-            <div className="header-stat">
-                <span className="label">QUESTION</span>
-                <span className="value">{question.current} / {question.total}</span>
-            </div>
-            <div className={`timer-circle ${timeLeft < 5 ? 'critical' : ''}`}>
-                {timeLeft}
-            </div>
-            <div className="header-stat">
-                <span className="label">CODE</span>
-                <span className="value">{roomCode}</span>
-            </div>
+            <div className="header-stat"><span className="label">QUESTION</span><span className="value">{question.current} / {question.total}</span></div>
+            <div className={`timer-circle ${timeLeft < 5 ? 'critical' : ''}`}>{isReviewing ? "0" : timeLeft}</div>
+            <div className="header-stat"><span className="label">CODE</span><span className="value">{roomCode}</span></div>
         </div>
 
         <GameProgress players={playersProgress} />
 
         <div className="game-content">
             <h1 className="question-text">{question.questionDescription}</h1>
-            {question.imageName && (
-                <img src={`http://localhost:5198/static/images/${question.imageName}`} className="game-image" alt=""/>
-            )}
-
+            {question.imageName && <img src={`http://localhost:5198/static/images/${question.imageName}`} className="game-image" alt=""/>}
             <div className="options-list">
                 {[1,2,3,4].map((n, idx) => {
                     let btnClass = "option-item clickable";
                     const isSelected = myAnswer === n;
-                    
                     if(isReviewing) {
                         btnClass = "option-item"; 
                         if(n === correctAnswer) btnClass += " correct-reveal";
@@ -160,20 +136,18 @@ export default function PlayerGame() {
                         if(isSelected) btnClass += " selected-wait";
                         else btnClass += " dim-reveal";
                     }
-
                     return (
                         <div key={n} className={btnClass} onClick={() => submit(idx)}>
                             <div className="option-idx">{n}</div>
                             <span>{question[`option${n}`]}</span>
-                            {isReviewing && n === correctAnswer && <span style={{marginLeft:'auto'}}>✅</span>}
-                            {isReviewing && isSelected && n !== correctAnswer && <span style={{marginLeft:'auto'}}>❌</span>}
+                            {isReviewing && n === correctAnswer && <span style={{marginLeft:'auto'}}></span>}
+                            {isReviewing && isSelected && n !== correctAnswer && <span style={{marginLeft:'auto'}}></span>}
                         </div>
                     )
                 })}
             </div>
             {hasAnswered && !isReviewing && <div style={{marginTop:'0.5rem', color:'var(--text-muted)'}}>Answer submitted...</div>}
         </div>
-
       </div>
     </div>
   );

@@ -13,15 +13,25 @@ export default function Login() {
 
   const handleSuccess = async (credentialResponse) => {
     try {
+      console.log("Sending Google Token to backend...");
       const res = await api.post("/Auth/google-login", {
         idToken: credentialResponse.credential,
       });
+      
+      console.log("Backend response:", res.data);
       const userData = res.data;
       sessionStorage.setItem("user", JSON.stringify(userData));
       if (userData.avatarUrl) sessionStorage.setItem("currentAvatar", userData.avatarUrl);
+      
       navigate("/dashboard");
     } catch (err) {
-      alert("Login failed.");
+      console.error("FULL LOGIN ERROR:", err);
+      
+      if (err.response && err.response.data && err.response.data.message) {
+          alert(`Login Error: ${err.response.data.message}\nDetails: ${err.response.data.details || ''}`);
+      } else {
+          alert(`Login Failed: ${err.message}`);
+      }
     }
   };
 
@@ -32,7 +42,13 @@ export default function Login() {
         <h1 className="login-title">MiniQuiz</h1>
         <p className="login-subtitle">Join the ultimate trivia battle!</p>
         <div className="google-btn-wrapper">
-            <GoogleLogin onSuccess={handleSuccess} onError={() => alert("Failed")} theme="filled_black" shape="pill" size="large" />
+            <GoogleLogin 
+                onSuccess={handleSuccess} 
+                onError={() => alert("Google Sign-In failed to start.")} 
+                theme="filled_black" 
+                shape="pill" 
+                size="large" 
+            />
         </div>
       </div>
     </div>

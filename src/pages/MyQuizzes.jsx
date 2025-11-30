@@ -9,7 +9,7 @@ export default function MyQuizzes() {
   const [newTitle, setNewTitle] = useState("");
 
   useEffect(() => { load(); }, []);
-  const load = () => api.get("/Quiz").then(res => setQuizzes(res.data));
+  const load = () => api.get("/Quiz").then(res => setQuizzes(res.data)).catch(console.error);
   
   const create = async () => {
     if(!newTitle) return;
@@ -20,17 +20,18 @@ export default function MyQuizzes() {
   return (
     <div className="page-wrapper">
       <div className="container">
-        <div className="dash-card" style={{marginBottom:'2rem'}}>
+        
+        <div className="dash-card" style={{marginBottom:'2rem', width: '100%', maxWidth:'600px'}}>
             <h2 className="dash-title">Create Quiz</h2>
             <div className="quiz-create-row">
-                <input className="dash-input" style={{marginBottom:0, textAlign:'left'}} placeholder="Quiz Title" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
-                <button className="btn-main" style={{width:'auto'}} onClick={create}>Create</button>
+                <input className="dash-input" style={{marginBottom:0}} placeholder="Quiz Title" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
+                <button className="btn-main" style={{width:'auto', marginLeft:'10px'}} onClick={create}>Create</button>
             </div>
         </div>
 
-        <div className="dash-card">
+        <div className="dash-card" style={{width: '100%', maxWidth:'800px'}}>
             <h2 className="dash-title">Your Quizzes</h2>
-            {quizzes.length === 0 && <p style={{color:'var(--text-muted)'}}>No quizzes created yet.</p>}
+            {quizzes.length === 0 && <p style={{color:'var(--text-muted)', textAlign:'center'}}>No quizzes created yet.</p>}
             {quizzes.map(q => (
                 <div key={q.id} className="quiz-item">
                     <div>
@@ -38,9 +39,7 @@ export default function MyQuizzes() {
                         <div className="quiz-item-meta">{q.questionCount} Questions</div>
                     </div>
                     <button className="btn-outline" style={{width:'auto', marginTop:0, padding:'0.5rem 1rem'}}
-                      onClick={() => navigate(`/edit-quiz/${q.id}`)}>
-                        Edit
-                        </button>
+                    onClick={() => navigate(`/edit-quiz/${q.id}`)}>Edit</button>
                 </div>
             ))}
         </div>

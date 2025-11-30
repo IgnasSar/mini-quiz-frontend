@@ -18,8 +18,8 @@ export default function HostGame() {
   const [playersProgress, setPlayersProgress] = useState([]);
   const [gameResult, setGameResult] = useState(null);
 
-  const timerIntervalRef = useRef(null);
-  const reviewTimeoutRef = useRef(null);
+  const timerRef = useRef(null);
+  const reviewTimerRef = useRef(null);
 
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -45,6 +45,7 @@ export default function HostGame() {
     conn.on("ShowAnswers", (ans) => {
         setIsReviewing(true);
         setCorrectAnswer(ans);
+        setTimeLeft(0);
     });
 
     conn.on("GameOver", (finalResult) => {
@@ -59,43 +60,46 @@ export default function HostGame() {
     setConnection(conn);
     return () => {
         conn.stop();
-        clearInterval(timerIntervalRef.current);
-        clearTimeout(reviewTimeoutRef.current);
+        clearInterval(timerRef.current);
+        clearTimeout(reviewTimerRef.current);
     };
   }, []);
 
   useEffect(() => {
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    if (reviewTimeoutRef.current) clearTimeout(reviewTimeoutRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (reviewTimerRef.current) clearTimeout(reviewTimerRef.current);
+
     if (gameResult) return;
 
-    if (!isReviewing) {
+    if (isReviewing) {
+        reviewTimerRef.current = setTimeout(() => {
+             if (connection) {
+                 connection.invoke("RequestNextQuestion", roomCode).catch(console.error);
+             }
+        }, 6000);
+    } 
+    else {
         if (timeLeft > 0) {
-            timerIntervalRef.current = setInterval(() => {
+            timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
-                        clearInterval(timerIntervalRef.current);
+                        clearInterval(timerRef.current);
                         if (connection) connection.invoke("TriggerShowAnswers", roomCode);
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
-        } else if (connection) {
+        } else if (timeLeft <= 0 && connection) {
             connection.invoke("TriggerShowAnswers", roomCode);
         }
-    } 
-    else if (isReviewing && connection) {
-        reviewTimeoutRef.current = setTimeout(() => {
-             connection.invoke("RequestNextQuestion", roomCode).catch(console.error);
-        }, 6000);
     }
 
     return () => {
-        clearInterval(timerIntervalRef.current);
-        clearTimeout(reviewTimeoutRef.current);
+        clearInterval(timerRef.current);
+        clearTimeout(reviewTimerRef.current);
     };
-  }, [timeLeft > 0, isReviewing, connection, gameResult, roomCode]);
+  }, [timeLeft, isReviewing, connection, gameResult, roomCode]);
 
   const handleEnd = () => navigate("/dashboard");
 
@@ -125,14 +129,13 @@ export default function HostGame() {
   return (
     <div className="page-wrapper">
       <div className="game-layout">
-        
         <div className="game-header">
             <div className="header-stat">
                 <span className="label">QUESTION</span>
                 <span className="value">{question.current} / {question.total}</span>
             </div>
             <div className={`timer-circle ${timeLeft < 5 ? 'critical' : ''}`}>
-                {isReviewing ? "✋" : timeLeft}
+                {isReviewing ? "0" : timeLeft}
             </div>
             <div className="header-stat">
                 <span className="label">CODE</span>
@@ -159,15 +162,14 @@ export default function HostGame() {
                         <div key={i} className={`option-item ${stateClass}`}>
                             <div className="option-idx">{i}</div>
                             <span>{question[`option${i}`]}</span>
-                            {isReviewing && isCorrect && <span style={{marginLeft:'auto'}}>✅</span>}
+                            {isReviewing && isCorrect && <span style={{marginLeft:'auto'}}></span>}
                         </div>
                     );
                 })}
             </div>
             
-            {isReviewing && <p style={{marginTop:'1rem', color:'var(--primary)'}}>Moving to next question...</p>}
+            {isReviewing && <p style={{marginTop:'1rem', color:'var(--primary)', fontWeight:'bold'}}>Next question in 6s...</p>}
         </div>
-
       </div>
     </div>
   );
