@@ -1,0 +1,30 @@
+.quiz-create-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.quiz-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.quiz-item:last-child {
+  border-bottom: none;
+}
+
+.quiz-item-title {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--text-main);
+  margin-bottom: 0.3rem;
+}
+
+.quiz-item-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
