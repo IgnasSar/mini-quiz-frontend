@@ -1,0 +1,209 @@
+.page-wrapper {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 70px;
+  background: var(--bg-main);
+}
+
+.game-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  height: 100%;
+}
+
+.game-header {
+  flex-shrink: 0;
+  width: 100%;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  height: 70px;
+}
+
+.header-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.label { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; }
+.value { font-size: 1.1rem; font-weight: bold; }
+
+.timer-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: 3px solid var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.timer-circle.critical {
+    border-color: var(--danger);
+    color: var(--danger);
+    animation: pulse 1s infinite;
+}
+
+.game-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.question-text {
+  font-size: 1.6rem;
+  text-align: center;
+  margin: 0.5rem 0;
+  line-height: 1.2;
+  flex-shrink: 0;
+  max-height: 20%;
+  overflow-y: auto;
+}
+
+.game-image {
+  height: auto;
+  max-height: 25%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  margin-bottom: 0.5rem;
+  flex-shrink: 1;
+}
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 800px;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.option-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.2s;
+    font-size: 1rem;
+    cursor: default;
+    width: 100%;
+    height: 50px;
+}
+
+.option-idx {
+    background: var(--bg-input);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.clickable { cursor: pointer; }
+.clickable:hover:not(:disabled) {
+    background: var(--bg-input);
+    border-color: var(--primary);
+}
+
+.selected-wait {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.correct-reveal {
+    background: rgba(34, 197, 94, 0.2) !important;
+    border-color: var(--success) !important;
+}
+
+.correct-reveal .option-idx {
+    background: var(--success);
+    color: #000;
+}
+
+.wrong-reveal {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: var(--danger) !important;
+}
+
+.dim-reveal { opacity: 0.4; }
+
+.race-container {
+    width: 100%;
+    background: var(--bg-card);
+    padding: 0.3rem 0.5rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    height: 40px;
+}
+
+.race-track {
+    position: relative;
+    height: 100%;
+    background: var(--bg-input);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+}
+
+.racer-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: left 0.5s ease-out;
+    z-index: 10;
+}
+
+.racer-img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid white;
+}
+
+.winner-card {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid var(--primary);
+    margin: auto;
+}

@@ -1,27 +1,41 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import UserEntry from "./pages/UserEntry";
-import Quiz from "./pages/Quiz";
-import TopNav from "./components/TopNav";
-import AddQuestion from "./pages/AddQuestion";
-import DeleteQuestion from "./pages/DeleteQuestion";
-import Result from "./pages/Result";
-import "./styles/globals.css";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import MyQuizzes from "./pages/MyQuizzes";
+import EditQuiz from "./pages/EditQuiz";
+import Lobby from "./pages/Lobby";
+import HostGame from "./pages/HostGame";
+import PlayerGame from "./pages/PlayerGame";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+const GOOGLE_CLIENT_ID = "93845720486-edfdn06hfn6kdhku9rfp6la69b63pidf.apps.googleusercontent.com";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-[#0f172a] text-slate-100">
-        <TopNav />
-        <div className="pt-16">
-          <Routes>
-            <Route path="/" element={<UserEntry />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/add" element={<AddQuestion />} />
-            <Route path="/delete" element={<DeleteQuestion />} />
-            <Route path="/result" element={<Result />} />
-          </Routes>
-        </div>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div className="app-root">
+        <Navbar />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            
+            <Route path="/my-quizzes" element={<MyQuizzes />} />
+            <Route path="/edit-quiz/:quizId" element={<EditQuiz />} />
+            
+            <Route path="/lobby/:roomCode" element={<Lobby />} />
+            <Route path="/host/:roomCode" element={<HostGame />} />
+            <Route path="/play/:roomCode" element={<PlayerGame />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
       </div>
-    </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }

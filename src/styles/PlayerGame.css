@@ -1,0 +1,72 @@
+.player-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-deep);
+}
+
+.player-status-bar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: 70px;
+}
+
+.status-text {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.player-controls {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: var(--border-subtle); /* Creates the grid lines */
+  border: 1px solid var(--border-subtle);
+  margin: 2rem;
+  max-width: 600px;
+  align-self: center;
+  width: calc(100% - 4rem);
+}
+
+.control-btn {
+  background: var(--bg-elevated);
+  border: none;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s;
+}
+
+.control-btn:active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.control-btn:hover {
+  background: var(--bg-surface);
+}
+
+.wait-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.wait-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--accent-secondary);
+  animation: pulse 2s infinite;
+}

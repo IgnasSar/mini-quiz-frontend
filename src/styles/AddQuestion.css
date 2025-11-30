@@ -1,30 +1,72 @@
 .add-container {
-  min-height: 100vh;
-  background: #0f172a;
+  padding-top: 100px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  min-height: 100vh;
 }
 
-.add-card textarea,
-.add-card input {
-  background: #0f172a;
-  color: #f1f5f9;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  padding: 0.5rem;
-  width: 100%;
+.add-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
 }
 
-.add-card button {
-  background: #6366f1;
-  color: white;
+.add-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.add-title {
+  color: var(--primary);
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
   border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  transition: 0.2s;
+  color: white;
+  font-size: 1.5rem;
 }
 
-.add-card button:hover {
-  background: #4f46e5;
+.add-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.file-zone {
+  border: 2px dashed var(--border-color);
+  padding: 2rem;
+  text-align: center;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.file-zone:hover { border-color: var(--primary); }
+
+.opt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.save-btn {
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  margin-top: 1rem;
 }

@@ -1,0 +1,83 @@
+.progress-container {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 900px;
+}
+
+.progress-title {
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.track {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.racer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(0.9);
+}
+
+.racer.finished {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.racer-avatar-wrapper {
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.racer-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+}
+
+.finished .racer-avatar {
+    border-color: var(--success);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+}
+
+.check-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--success);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.racer-name {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-main);
+    max-width: 70px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

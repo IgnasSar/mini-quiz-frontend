@@ -1,92 +1,45 @@
 import React, { useState } from "react";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
+import "../styles/AddQuestion.css";
 
 export default function AddQuestion() {
-  const [form, setForm] = useState({
-    questionDescription: "",
-    option1: "",
-    option2: "",
-    option3: "",
-    option4: "",
-    answer: 1,
-    imageName: "",
-  });
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ questionDescription: "", option1: "", option2: "", option3: "", option4: "", answer: 1 });
+  const [image, setImage] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage("");
-
+    const formData = new FormData();
+    Object.keys(form).forEach(k => formData.append(k, form[k]));
+    if (image) formData.append("imageFile", image);
     try {
-      const payload = {
-        questionDescription: form.questionDescription,
-        option1: form.option1,
-        option2: form.option2,
-        option3: form.option3,
-        option4: form.option4,
-        answer: Number(form.answer),
-        imageName: form.imageName || null,
-      };
-
-      const res = await api.post("/Question", payload);
-      if (res.status >= 200 && res.status < 300) {
-        setMessage("Question added successfully!");
-        setForm({
-          questionDescription: "",
-          option1: "",
-          option2: "",
-          option3: "",
-          option4: "",
-          answer: 1,
-        });
-      } else {
-        setMessage("Failed to add question.");
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage("Server error.");
-    } finally {
-      setLoading(false);
-    }
+      await api.post("/Question", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      alert("Added!"); navigate("/admin");
+    } catch { alert("Error"); }
   };
 
   return (
     <div className="add-container">
       <div className="add-card">
-        <h2 className="add-title">Add a New Question</h2>
-
-        <form onSubmit={handleSubmit} className="add-form">
-          <input
-            type="text"
-            name="questionDescription"
-            placeholder="Question description"
-            value={form.questionDescription}
-            onChange={handleChange}
-            required
-          />
-          <input name="option1" placeholder="Option 1" value={form.option1} onChange={handleChange} required />
-          <input name="option2" placeholder="Option 2" value={form.option2} onChange={handleChange} required />
-          <input name="option3" placeholder="Option 3" value={form.option3} onChange={handleChange} required />
-          <input name="option4" placeholder="Option 4" value={form.option4} onChange={handleChange} required />
-
-          <select name="answer" value={form.answer} onChange={handleChange}>
-            <option value={1}>Answer 1</option>
-            <option value={2}>Answer 2</option>
-            <option value={3}>Answer 3</option>
-            <option value={4}>Answer 4</option>
-          </select>
-
-          <button type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Save Question"}
-          </button>
-
-          {message && <p className="add-message">{message}</p>}
+        <div className="add-header">
+            <h2 className="add-title">Add Question</h2>
+            <button className="close-btn" onClick={() => navigate("/admin")}>✕</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+            <input className="add-input" placeholder="Question" value={form.questionDescription} onChange={e => setForm({...form, questionDescription: e.target.value})} required />
+            <div className="file-zone">
+                <input type="file" onChange={e => setImage(e.target.files[0])} accept="image/*" style={{display:'none'}} id="f" />
+                <label htmlFor="f" style={{cursor:'pointer'}}>{image ? image.name : "Upload Image"}</label>
+            </div>
+            <div className="opt-grid">
+                {[1,2,3,4].map(n => <input key={n} className="add-input" placeholder={`Option ${n}`} value={form[`option${n}`]} onChange={e => setForm({...form, [`option${n}`]: e.target.value})} required />)}
+            </div>
+            <label>Correct Answer:</label>
+            <select className="add-input" value={form.answer} onChange={e => setForm({...form, answer: Number(e.target.value)})}>
+                {[1,2,3,4].map(n => <option key={n} value={n}>Option {n}</option>)}
+            </select>
+            <button className="save-btn">Save</button>
         </form>
       </div>
     </div>
