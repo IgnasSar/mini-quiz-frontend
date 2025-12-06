@@ -18,17 +18,17 @@ export default function HostGame() {
   const [playersProgress, setPlayersProgress] = useState([]);
   const [gameResult, setGameResult] = useState(null);
 
-  const timerRef = useRef(null);
-  const reviewTimerRef = useRef(null);
-
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
+    
     const conn = new HubConnectionBuilder()
       .withUrl("http://localhost:5198/gameHub", { accessTokenFactory: () => user.token })
       .withAutomaticReconnect()
       .build();
     
-    conn.start().then(() => {});
+    conn.start().then(async () => {
+        await conn.invoke("JoinGameHost", roomCode);
+    }).catch(err => console.error("SignalR Connect Error:", err));
     
     conn.on("ReceiveQuestion", (data) => {
         setQuestion(data);
@@ -43,9 +43,9 @@ export default function HostGame() {
     });
 
     conn.on("ShowAnswers", (ans) => {
-        setIsReviewing(true);
-        setCorrectAnswer(ans);
         setTimeLeft(0);
+        setCorrectAnswer(ans);
+        setIsReviewing(true);
     });
 
     conn.on("GameOver", (finalResult) => {
@@ -53,53 +53,39 @@ export default function HostGame() {
     });
     
     conn.on("SessionEnded", () => {
-        alert("Session ended.");
         navigate("/dashboard");
     });
 
     setConnection(conn);
-    return () => {
-        conn.stop();
-        clearInterval(timerRef.current);
-        clearTimeout(reviewTimerRef.current);
-    };
+    return () => { conn.stop(); };
   }, []);
 
   useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (reviewTimerRef.current) clearTimeout(reviewTimerRef.current);
+    if (isReviewing || !question || gameResult) return;
 
-    if (gameResult) return;
+    if (timeLeft === 0) {
+        if (connection) connection.invoke("TriggerShowAnswers", roomCode);
+        return;
+    }
 
-    if (isReviewing) {
-        reviewTimerRef.current = setTimeout(() => {
+    const timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, isReviewing, connection, roomCode, question, gameResult]);
+
+  useEffect(() => {
+    if (isReviewing && !gameResult) {
+        const timer = setTimeout(() => {
              if (connection) {
                  connection.invoke("RequestNextQuestion", roomCode).catch(console.error);
              }
-        }, 6000);
-    } 
-    else {
-        if (timeLeft > 0) {
-            timerRef.current = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(timerRef.current);
-                        if (connection) connection.invoke("TriggerShowAnswers", roomCode);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        } else if (timeLeft <= 0 && connection) {
-            connection.invoke("TriggerShowAnswers", roomCode);
-        }
-    }
+        }, 5000);
 
-    return () => {
-        clearInterval(timerRef.current);
-        clearTimeout(reviewTimerRef.current);
-    };
-  }, [timeLeft, isReviewing, connection, gameResult, roomCode]);
+        return () => clearTimeout(timer);
+    }
+  }, [isReviewing, gameResult, connection, roomCode]);
 
   const handleEnd = () => navigate("/dashboard");
 
@@ -107,7 +93,7 @@ export default function HostGame() {
       return (
         <div className="page-wrapper">
           <div className="winner-card">
-              <h1>🏆 WINNER 🏆</h1>
+              <h1>WINNER</h1>
               <img src={gameResult.winnerAvatar} className="winner-avatar" alt="Winner"/>
               <h2>{gameResult.winnerName}</h2>
               <h3 style={{color:'var(--success)'}}>{gameResult.winnerScore} Points</h3>
@@ -135,7 +121,7 @@ export default function HostGame() {
                 <span className="value">{question.current} / {question.total}</span>
             </div>
             <div className={`timer-circle ${timeLeft < 5 ? 'critical' : ''}`}>
-                {isReviewing ? "0" : timeLeft}
+                {timeLeft}
             </div>
             <div className="header-stat">
                 <span className="label">CODE</span>
@@ -162,13 +148,12 @@ export default function HostGame() {
                         <div key={i} className={`option-item ${stateClass}`}>
                             <div className="option-idx">{i}</div>
                             <span>{question[`option${i}`]}</span>
-                            {isReviewing && isCorrect && <span style={{marginLeft:'auto'}}></span>}
                         </div>
                     );
                 })}
             </div>
             
-            {isReviewing && <p style={{marginTop:'1rem', color:'var(--primary)', fontWeight:'bold'}}>Next question in 6s...</p>}
+            {isReviewing && <p style={{marginTop:'1rem', color:'var(--primary)', fontWeight:'bold'}}>Next question in 5s...</p>}
         </div>
       </div>
     </div>

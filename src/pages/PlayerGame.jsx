@@ -16,6 +16,7 @@ export default function PlayerGame() {
   const [playersProgress, setPlayersProgress] = useState([]);
   const [gameResult, setGameResult] = useState(null);
   const [emailSent, setEmailSent] = useState(false);
+  
   const [timeLeft, setTimeLeft] = useState(20);
   const [isReviewing, setIsReviewing] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState(null);
@@ -31,8 +32,7 @@ export default function PlayerGame() {
         .build();
 
     conn.start().then(async () => {
-        const success = await conn.invoke("JoinRoom", roomCode, user.name, sessionStorage.getItem("currentAvatar"));
-        if (!success) { navigate("/dashboard"); }
+        await conn.invoke("JoinRoom", roomCode, user.name, sessionStorage.getItem("currentAvatar"));
     }).catch(console.error);
     
     conn.on("ReceiveQuestion", (data) => {
@@ -52,17 +52,13 @@ export default function PlayerGame() {
     conn.on("AnswerAccepted", () => setHasAnswered(true));
 
     conn.on("ShowAnswers", (ans) => {
+        setTimeLeft(0);
         setCorrectAnswer(ans);
         setIsReviewing(true);
-        setTimeLeft(0);
     });
     
     conn.on("GameOver", (res) => setGameResult(res));
-    
-    conn.on("SessionEnded", () => {
-        alert("Session ended by host.");
-        navigate("/dashboard");
-    });
+    conn.on("SessionEnded", () => navigate("/dashboard"));
     
     setConnection(conn);
     return () => conn.stop();
@@ -113,7 +109,7 @@ export default function PlayerGame() {
       <div className="game-layout">
         <div className="game-header">
             <div className="header-stat"><span className="label">QUESTION</span><span className="value">{question.current} / {question.total}</span></div>
-            <div className={`timer-circle ${timeLeft < 5 ? 'critical' : ''}`}>{isReviewing ? "0" : timeLeft}</div>
+            <div className={`timer-circle ${timeLeft < 5 ? 'critical' : ''}`}>{timeLeft}</div>
             <div className="header-stat"><span className="label">CODE</span><span className="value">{roomCode}</span></div>
         </div>
 
@@ -140,8 +136,6 @@ export default function PlayerGame() {
                         <div key={n} className={btnClass} onClick={() => submit(idx)}>
                             <div className="option-idx">{n}</div>
                             <span>{question[`option${n}`]}</span>
-                            {isReviewing && n === correctAnswer && <span style={{marginLeft:'auto'}}></span>}
-                            {isReviewing && isSelected && n !== correctAnswer && <span style={{marginLeft:'auto'}}></span>}
                         </div>
                     )
                 })}
