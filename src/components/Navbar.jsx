@@ -13,15 +13,26 @@ export default function Navbar() {
 
   if (!user) return null;
 
+  const currentAvatar = sessionStorage.getItem("currentAvatar") || user.avatarUrl;
+  const fallbackAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+
   return (
     <nav className="navbar">
-      <Link to="/dashboard" className="nav-logo">MiniQuiz</Link>
+      <div className="nav-left">
+          <Link to="/dashboard" className="nav-logo">MiniQuiz</Link>
+          <Link to="/my-quizzes" className="nav-link">My Quizzes</Link>
+          <Link to="/community" className="nav-link">Community Library</Link>
+      </div>
       <div className="nav-user">
         <div className="nav-info">
             <span className="nav-name">{user.name}</span>
-            <span className="nav-email">{user.email}</span>
         </div>
-        <img src={sessionStorage.getItem("currentAvatar") || user.avatarUrl} alt="Profile" className="nav-avatar"/>
+        <img 
+            src={currentAvatar} 
+            alt="Profile" 
+            className="nav-avatar"
+            onError={(e) => { e.target.onerror = null; e.target.src = fallbackAvatar; }}
+        />
         <button onClick={handleLogout} className="logout-btn">Logout</button>
       </div>
     </nav>

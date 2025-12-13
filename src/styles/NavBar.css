@@ -6,12 +6,18 @@
   height: 70px;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
   z-index: 1000;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .nav-logo {
@@ -20,6 +26,18 @@
   color: var(--primary);
   text-decoration: none;
   letter-spacing: -0.05em;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--text-main);
 }
 
 .nav-user {
@@ -34,6 +52,7 @@
   border-radius: 50%;
   border: 2px solid var(--primary);
   object-fit: cover;
+  background-color: var(--bg-input);
 }
 
 .nav-info {
@@ -45,21 +64,17 @@
   display: block;
   font-weight: bold;
   font-size: 0.9rem;
-}
-
-.nav-email {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-main);
 }
 
 .logout-btn {
   background: transparent;
   color: var(--danger);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   transition: 0.2s;
+  margin-left: 1rem;
 }
 
 .logout-btn:hover {
