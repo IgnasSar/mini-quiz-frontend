@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MyQuizzes from "./pages/MyQuizzes";
+import CommunityLibrary from "./pages/CommunityLibrary";
 import EditQuiz from "./pages/EditQuiz";
 import Lobby from "./pages/Lobby";
 import HostGame from "./pages/HostGame";
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             
             <Route path="/my-quizzes" element={<MyQuizzes />} />
+            <Route path="/community" element={<CommunityLibrary />} />
             <Route path="/edit-quiz/:quizId" element={<EditQuiz />} />
             
             <Route path="/lobby/:roomCode" element={<Lobby />} />
