@@ -13,8 +13,10 @@ export default function MyQuizzes() {
   
   const create = async () => {
     if(!newTitle) return;
-    await api.post("/Quiz", { title: newTitle, description: "New Quiz" });
-    setNewTitle(""); load();
+    try {
+        const res = await api.post("/Quiz", { title: newTitle, description: "New Quiz" });
+        navigate(`/edit-quiz/${res.data.id}`);
+    } catch (e) { console.error(e); }
   };
 
   return (
@@ -24,8 +26,8 @@ export default function MyQuizzes() {
         <div className="dash-card" style={{marginBottom:'2rem', width: '100%', maxWidth:'600px'}}>
             <h2 className="dash-title">Create Quiz</h2>
             <div className="quiz-create-row">
-                <input className="dash-input" style={{marginBottom:0}} placeholder="Quiz Title" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
-                <button className="btn-main" style={{width:'auto', marginLeft:'10px'}} onClick={create}>Create</button>
+                <input className="dash-input" style={{marginBottom:0}} placeholder="New Quiz Name" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
+                <button className="btn-main" style={{width:'auto', marginLeft:'10px'}} onClick={create}>Create & Edit</button>
             </div>
         </div>
 
@@ -36,10 +38,14 @@ export default function MyQuizzes() {
                 <div key={q.id} className="quiz-item">
                     <div>
                         <div className="quiz-item-title">{q.title}</div>
-                        <div className="quiz-item-meta">{q.questionCount} Questions</div>
+                        <div className="quiz-item-meta">
+                            {q.questionCount} Questions • {q.isPublic ? "Public" : "Private"}
+                        </div>
                     </div>
-                    <button className="btn-outline" style={{width:'auto', marginTop:0, padding:'0.5rem 1rem'}}
-                    onClick={() => navigate(`/edit-quiz/${q.id}`)}>Edit</button>
+                    <button className="btn-outline" style={{width:'auto', marginTop:0, padding:'0.5rem 1.5rem'}}
+                        onClick={() => navigate(`/edit-quiz/${q.id}`)}>
+                        Edit Quiz
+                    </button>
                 </div>
             ))}
         </div>
