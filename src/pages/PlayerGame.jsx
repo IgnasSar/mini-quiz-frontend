@@ -16,6 +16,7 @@ export default function PlayerGame() {
   const [playersProgress, setPlayersProgress] = useState([]);
   const [gameResult, setGameResult] = useState(null);
   const [emailSent, setEmailSent] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   const [timeLeft, setTimeLeft] = useState(20);
   const [isReviewing, setIsReviewing] = useState(false);
@@ -78,11 +79,21 @@ export default function PlayerGame() {
   };
 
   const sendResultsEmail = async () => {
+      if (isSending || emailSent) return;
+      setIsSending(true);
       try {
           const user = JSON.parse(sessionStorage.getItem("user"));
-          await api.post("/Game/send-results", { roomCode, email: user.email });
+          await api.post("/Game/send-results", { 
+              roomCode: roomCode, 
+              email: user.email 
+          });
           setEmailSent(true);
-      } catch (err) { alert("Failed"); }
+      } catch (err) { 
+          alert("Failed to send email. Session may have expired.");
+          console.error(err);
+      } finally {
+          setIsSending(false);
+      }
   };
 
   if (gameResult) {
@@ -95,14 +106,31 @@ export default function PlayerGame() {
               <h2>Session Complete!</h2>
               <div style={{fontSize:'3rem', fontWeight:'bold', margin:'1rem 0'}}>#{myResult?.rank || '-'}</div>
               <div style={{fontSize:'1.5rem', color:'var(--primary)'}}>{myResult?.score || 0} Points</div>
-              {!emailSent ? <button className="btn-outline" onClick={sendResultsEmail} style={{marginTop:'2rem'}}>📧 Email Results</button> : <p style={{color:'var(--success)', marginTop:'2rem'}}>Sent!</p>}
-              <button className="btn-main" onClick={() => navigate("/dashboard")} style={{marginTop:'1rem'}}>Exit</button>
+              
+              <div style={{marginTop: '2rem'}}>
+                  {!emailSent ? (
+                      <button 
+                        className="btn-outline" 
+                        onClick={sendResultsEmail} 
+                        disabled={isSending}
+                        style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%'}}
+                      >
+                         {isSending ? "Sending..." : "Email My Results"}
+                      </button>
+                  ) : (
+                      <div style={{padding: '1rem', background: 'rgba(34, 197, 94, 0.2)', borderRadius: '8px', border: '1px solid var(--success)', color: 'var(--success)', fontWeight: 'bold'}}>
+                          Email Sent Successfully
+                      </div>
+                  )}
+              </div>
+
+              <button className="btn-main" onClick={() => navigate("/dashboard")} style={{marginTop:'1rem'}}>Exit to Dashboard</button>
           </div>
         </div>
       );
   }
 
-  if (!question) return <div className="page-wrapper"><h2 style={{marginTop:'100px'}}>Waiting...</h2></div>;
+  if (!question) return <div className="page-wrapper"><h2 style={{marginTop:'100px'}}>Waiting for Host...</h2></div>;
 
   return (
     <div className="page-wrapper">
