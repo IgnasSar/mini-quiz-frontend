@@ -46,10 +46,7 @@ export default function PlayerGame() {
         setTimeLeft(Math.floor(data.timeLimit));
     });
     
-    conn.on("UpdateProgress", (players) => {
-        setPlayersProgress(players);
-    });
-    
+    conn.on("UpdateProgress", (players) => setPlayersProgress(players));
     conn.on("AnswerAccepted", () => setHasAnswered(true));
 
     conn.on("ShowAnswers", (ans) => {
@@ -83,17 +80,19 @@ export default function PlayerGame() {
       setIsSending(true);
       try {
           const user = JSON.parse(sessionStorage.getItem("user"));
-          await api.post("/Game/send-results", { 
-              roomCode: roomCode, 
-              email: user.email 
-          });
+          await api.post("/Game/send-results", { roomCode: roomCode, email: user.email });
           setEmailSent(true);
       } catch (err) { 
-          alert("Failed to send email. Session may have expired.");
-          console.error(err);
+          alert("Failed to send email.");
       } finally {
           setIsSending(false);
       }
+  };
+
+  const getImageSrc = (name) => {
+      if(!name) return null;
+      if(name.startsWith('http')) return name;
+      return `http://localhost:5198/static/images/${name}`;
   };
 
   if (gameResult) {
@@ -106,15 +105,9 @@ export default function PlayerGame() {
               <h2>Session Complete!</h2>
               <div style={{fontSize:'3rem', fontWeight:'bold', margin:'1rem 0'}}>#{myResult?.rank || '-'}</div>
               <div style={{fontSize:'1.5rem', color:'var(--primary)'}}>{myResult?.score || 0} Points</div>
-              
               <div style={{marginTop: '2rem'}}>
                   {!emailSent ? (
-                      <button 
-                        className="btn-outline" 
-                        onClick={sendResultsEmail} 
-                        disabled={isSending}
-                        style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%'}}
-                      >
+                      <button className="btn-outline" onClick={sendResultsEmail} disabled={isSending} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%'}}>
                          {isSending ? "Sending..." : "Email My Results"}
                       </button>
                   ) : (
@@ -123,7 +116,6 @@ export default function PlayerGame() {
                       </div>
                   )}
               </div>
-
               <button className="btn-main" onClick={() => navigate("/dashboard")} style={{marginTop:'1rem'}}>Exit to Dashboard</button>
           </div>
         </div>
@@ -145,7 +137,7 @@ export default function PlayerGame() {
 
         <div className="game-content">
             <h1 className="question-text">{question.questionDescription}</h1>
-            {question.imageName && <img src={`http://localhost:5198/static/images/${question.imageName}`} className="game-image" alt=""/>}
+            {question.imageName && <img src={getImageSrc(question.imageName)} className="game-image" alt=""/>}
             <div className="options-list">
                 {[1,2,3,4].map((n, idx) => {
                     let btnClass = "option-item clickable";

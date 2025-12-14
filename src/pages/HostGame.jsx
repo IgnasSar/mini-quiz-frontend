@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import GameProgress from "../components/GameProgress";
@@ -28,7 +28,7 @@ export default function HostGame() {
     
     conn.start().then(async () => {
         await conn.invoke("JoinGameHost", roomCode);
-    }).catch(err => console.error("SignalR Connect Error:", err));
+    }).catch(err => console.error(err));
     
     conn.on("ReceiveQuestion", (data) => {
         setQuestion(data);
@@ -38,9 +38,7 @@ export default function HostGame() {
         setGameResult(null);
     });
 
-    conn.on("UpdateProgress", (players) => {
-        setPlayersProgress(players);
-    });
+    conn.on("UpdateProgress", (players) => setPlayersProgress(players));
 
     conn.on("ShowAnswers", (ans) => {
         setTimeLeft(0);
@@ -48,13 +46,8 @@ export default function HostGame() {
         setIsReviewing(true);
     });
 
-    conn.on("GameOver", (finalResult) => {
-        setGameResult(finalResult);
-    });
-    
-    conn.on("SessionEnded", () => {
-        navigate("/dashboard");
-    });
+    conn.on("GameOver", (finalResult) => setGameResult(finalResult));
+    conn.on("SessionEnded", () => navigate("/dashboard"));
 
     setConnection(conn);
     return () => { conn.stop(); };
@@ -62,32 +55,28 @@ export default function HostGame() {
 
   useEffect(() => {
     if (isReviewing || !question || gameResult) return;
-
     if (timeLeft === 0) {
         if (connection) connection.invoke("TriggerShowAnswers", roomCode);
         return;
     }
-
-    const timer = setInterval(() => {
-        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
+    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, [timeLeft, isReviewing, connection, roomCode, question, gameResult]);
 
   useEffect(() => {
     if (isReviewing && !gameResult) {
         const timer = setTimeout(() => {
-             if (connection) {
-                 connection.invoke("RequestNextQuestion", roomCode).catch(console.error);
-             }
+             if (connection) connection.invoke("RequestNextQuestion", roomCode).catch(console.error);
         }, 5000);
-
         return () => clearTimeout(timer);
     }
   }, [isReviewing, gameResult, connection, roomCode]);
 
-  const handleEnd = () => navigate("/dashboard");
+  const getImageSrc = (name) => {
+      if(!name) return null;
+      if(name.startsWith('http')) return name;
+      return `http://localhost:5198/static/images/${name}`;
+  };
 
   if (gameResult) {
       return (
@@ -104,7 +93,7 @@ export default function HostGame() {
                       </div>
                   ))}
               </div>
-              <button className="btn-main" onClick={handleEnd} style={{marginTop:'2rem'}}>Dashboard</button>
+              <button className="btn-main" onClick={() => navigate("/dashboard")} style={{marginTop:'2rem'}}>Dashboard</button>
           </div>
         </div>
       );
@@ -134,16 +123,13 @@ export default function HostGame() {
         <div className="game-content">
             <h1 className="question-text">{question.questionDescription}</h1>
             {question.imageName && (
-                <img src={`http://localhost:5198/static/images/${question.imageName}`} className="game-image" alt=""/>
+                <img src={getImageSrc(question.imageName)} className="game-image" alt=""/>
             )}
 
             <div className="options-list">
                 {[1,2,3,4].map(i => {
                     const isCorrect = correctAnswer === i;
-                    const stateClass = isReviewing 
-                        ? (isCorrect ? 'correct-reveal' : 'dim-reveal') 
-                        : '';
-
+                    const stateClass = isReviewing ? (isCorrect ? 'correct-reveal' : 'dim-reveal') : '';
                     return (
                         <div key={i} className={`option-item ${stateClass}`}>
                             <div className="option-idx">{i}</div>
@@ -152,7 +138,6 @@ export default function HostGame() {
                     );
                 })}
             </div>
-            
             {isReviewing && <p style={{marginTop:'1rem', color:'var(--primary)', fontWeight:'bold'}}>Next question in 5s...</p>}
         </div>
       </div>
