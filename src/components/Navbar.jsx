@@ -23,6 +23,7 @@ export default function Navbar() {
           <Link to="/my-quizzes" className="nav-link">My Quizzes</Link>
           <Link to="/community" className="nav-link">Community</Link>
           <Link to="/social" className="nav-link">Social</Link>
+          <Link to="/study" className="nav-link">Study</Link>
       </div>
       <div className="nav-user">
         <div className="nav-info">
