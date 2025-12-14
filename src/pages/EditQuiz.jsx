@@ -77,7 +77,6 @@ export default function EditQuiz() {
           setPreviewImage(null);
       }
       setImage(null);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelEdit = () => {
@@ -142,7 +141,7 @@ export default function EditQuiz() {
 
   return (
     <div className="page-wrapper">
-      <div className="container edit-container">
+      <div className="edit-container">
         
         <div className="edit-header">
             <button onClick={() => navigate("/my-quizzes")} className="back-link">← Back</button>
@@ -150,99 +149,122 @@ export default function EditQuiz() {
         </div>
 
         <div className="editor-layout">
+            
+            {/* LEFT: Settings */}
             <div className="panel-left">
-                <div className="dash-card">
+                <div className="dash-card settings-card">
                     <h3 className="section-title">Settings</h3>
+                    
                     <label className="label">Title</label>
                     <input className="input-styled" value={quizData.title} onChange={e => setQuizData({...quizData, title: e.target.value})} />
+                    
                     <label className="label">Description</label>
-                    <textarea className="input-styled" rows="3" value={quizData.description} onChange={e => setQuizData({...quizData, description: e.target.value})} />
+                    <textarea className="input-styled" rows="4" value={quizData.description} onChange={e => setQuizData({...quizData, description: e.target.value})} />
+                    
                     <div className="visibility-box">
-                        <label className="label">Visibility</label>
+                        <span className="vis-status">{quizData.isPublic ? "Public Quiz" : "Private Quiz"}</span>
                         <div className={`toggle-switch ${quizData.isPublic ? 'on' : 'off'}`} onClick={() => setQuizData({...quizData, isPublic: !quizData.isPublic})}>
                             <div className="toggle-knob"></div>
                         </div>
-                        <span className="vis-status">{quizData.isPublic ? "Public" : "Private"}</span>
                     </div>
+                    
                     <div className="btn-group">
-                        <button className="btn-main" onClick={saveSettings}>Save</button>
-                        <button className="btn-outline danger" onClick={deleteQuiz}>Delete</button>
+                        <button className="btn-main" onClick={saveSettings}>Save Changes</button>
+                        <button className="btn-outline danger" onClick={deleteQuiz}>Delete Quiz</button>
                     </div>
                 </div>
             </div>
 
+            {/* CENTER: Editor Form & List */}
             <div className="panel-center">
-                <div className="dash-card">
-                    <div className="q-add-header">
-                        <h3 className="section-title" style={{marginBottom:0}}>
-                            {isEditing ? "Edit Question" : "Add Question"}
-                        </h3>
-                        {!isEditing && <button className="ai-btn" onClick={() => setShowAiModal(true)}>AI Add Questions</button>}
+                
+                {/* Form Card */}
+                <div className="dash-card editor-form-card">
+                    <div className="section-title">
+                        {isEditing ? "Edit Question" : "New Question"}
+                        {!isEditing && <button className="ai-btn" onClick={() => setShowAiModal(true)}>✨ AI Generate</button>}
                     </div>
+                    
                     <form onSubmit={submitQuestion}>
                         <input className="input-styled" placeholder="Question Text" value={form.questionDescription} onChange={e => setForm({...form, questionDescription: e.target.value})} required />
-                        <div className="options-grid-mini">
-                            {[1,2,3,4].map(n => (
-                                <input key={n} className="input-styled" placeholder={`Option ${n}`} value={form[`option${n}`]} onChange={e => setForm({...form, [`option${n}`]: e.target.value})} required />
-                            ))}
+                        
+                        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'10px'}}>
+                            <input className="input-styled" placeholder="Option 1" value={form.option1} onChange={e => setForm({...form, option1: e.target.value})} required />
+                            <input className="input-styled" placeholder="Option 2" value={form.option2} onChange={e => setForm({...form, option2: e.target.value})} required />
+                            <input className="input-styled" placeholder="Option 3" value={form.option3} onChange={e => setForm({...form, option3: e.target.value})} required />
+                            <input className="input-styled" placeholder="Option 4" value={form.option4} onChange={e => setForm({...form, option4: e.target.value})} required />
                         </div>
-                        <div className="form-row">
-                            <div style={{flex:1}}>
-                                <select className="input-styled" value={form.answer} onChange={e => setForm({...form, answer: Number(e.target.value)})}>
-                                    {[1,2,3,4].map(n => <option key={n} value={n}>Option {n} is correct</option>)}
-                                </select>
-                            </div>
-                            <div style={{flex:1}}>
-                                <label className="custom-file-upload">
-                                    <input type="file" onChange={handleImageChange} accept="image/*" />
-                                    {image ? "Image Selected" : "Upload Image"}
-                                </label>
-                            </div>
+
+                        <div style={{display:'flex', gap:'10px', alignItems:'center', marginBottom:'1rem'}}>
+                            <select className="input-styled" style={{marginBottom:0, flex:1}} value={form.answer} onChange={e => setForm({...form, answer: Number(e.target.value)})}>
+                                <option value={1}>Option 1 is Correct</option>
+                                <option value={2}>Option 2 is Correct</option>
+                                <option value={3}>Option 3 is Correct</option>
+                                <option value={4}>Option 4 is Correct</option>
+                            </select>
+                            <label className="btn-outline" style={{padding:'0.8rem', flex:1, textAlign:'center', marginBottom:0, fontSize:'0.9rem'}}>
+                                <input type="file" onChange={handleImageChange} accept="image/*" style={{display:'none'}} />
+                                {image ? "Image Selected" : "Upload Image"}
+                            </label>
                         </div>
+
                         <div style={{display:'flex', gap:'10px'}}>
-                            <button className="btn-main" type="submit">{isEditing ? "Update Question" : "Add Manually"}</button>
+                            <button className="btn-main" type="submit">{isEditing ? "Update" : "Add Question"}</button>
                             {isEditing && <button type="button" className="btn-outline" onClick={cancelEdit}>Cancel</button>}
                         </div>
                     </form>
                 </div>
 
-                <div className="questions-list-section">
-                    <h3 className="list-title">Questions ({questions.length})</h3>
-                    {questions.map((q, i) => (
-                        <div key={q.id} className="q-list-item">
-                            <div className="q-content">
-                                <span className="q-number">#{i+1}</span>
-                                <div>
-                                    <span className="q-text">{q.questionDescription}</span>
-                                    {q.imageName && <span style={{fontSize:'0.7rem', color:'#6366f1', marginLeft:'10px'}}>(Has Image)</span>}
+                {/* Questions List Card */}
+                <div className="dash-card questions-list-card">
+                    <div className="list-header">
+                        <h3 className="section-title" style={{marginBottom:0}}>Questions ({questions.length})</h3>
+                    </div>
+                    <div className="questions-scroll-area">
+                        {questions.length === 0 ? <p style={{color:'#64748b', textAlign:'center', marginTop:'2rem'}}>No questions added yet.</p> :
+                        questions.map((q, i) => (
+                            <div key={q.id} className="q-list-item" onClick={() => startEdit(q)}>
+                                <div className="q-content">
+                                    <span className="q-number">#{i+1}</span>
+                                    <div style={{display:'flex', flexDirection:'column', width:'100%'}}>
+                                        <span className="q-text">{q.questionDescription}</span>
+                                        {q.imageName && <span className="has-image-badge">IMG</span>}
+                                    </div>
+                                </div>
+                                <div style={{display:'flex', gap:'8px', alignItems:'flex-start'}}>
+                                    <button className="btn-icon-edit" onClick={(e) => {e.stopPropagation(); startEdit(q);}}>✎</button>
+                                    <button className="btn-icon-del" onClick={(e) => {e.stopPropagation(); deleteQuestion(q.id);}}>🗑</button>
                                 </div>
                             </div>
-                            <div style={{display:'flex', gap:'10px'}}>
-                                <button className="btn-icon-edit" onClick={() => startEdit(q)}>✎</button>
-                                <button className="btn-icon-del" onClick={() => deleteQuestion(q.id)}>🗑</button>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
 
+            {/* RIGHT: Live Preview */}
             <div className="panel-right">
                 <div className="dash-card preview-card">
-                    <h3 className="section-title" style={{textAlign:'center'}}>Live Preview</h3>
+                    <div style={{padding:'1.5rem', flexShrink:0, borderBottom:'1px solid #334155'}}>
+                        <h3 className="section-title" style={{textAlign:'center', marginBottom:0}}>Live Preview</h3>
+                    </div>
+                    
                     <div className="preview-content">
-                        {previewImage ? <img src={previewImage} className="preview-img-real" alt="" /> : <div className="preview-placeholder">Image Preview</div>}
-                        <h4 className="preview-q-text">{form.questionDescription || "Question text will appear here..."}</h4>
-                        <div className="preview-opts">
-                            {[1,2,3,4].map(n => (
-                                <div key={n} className={`preview-opt-row ${form.answer === n ? 'correct' : ''}`}>
-                                    <div className="p-badge">{n}</div>
-                                    <span className="p-text">{form[`option${n}`] || `Option ${n}`}</span>
-                                </div>
-                            ))}
+                        <div style={{padding:'1.5rem', flex:1, display:'flex', flexDirection:'column'}}>
+                            {previewImage ? <img src={previewImage} className="preview-img-real" alt="" /> : <div className="preview-placeholder">Image Preview</div>}
+                            <h4 className="preview-q-text">{form.questionDescription || "Question text will appear here..."}</h4>
+                            <div className="preview-opts">
+                                {[1,2,3,4].map(n => (
+                                    <div key={n} className={`preview-opt-row ${form.answer === n ? 'correct' : ''}`}>
+                                        <div className="p-badge">{n}</div>
+                                        <span className="p-text">{form[`option${n}`] || `Option ${n}`}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
         {showAiModal && (

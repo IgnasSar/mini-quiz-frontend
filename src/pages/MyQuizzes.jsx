@@ -56,7 +56,7 @@ export default function MyQuizzes() {
                 </div>
                 
                 <button className="btn-ai-standard" onClick={() => setShowAiModal(true)}>
-                    <span>✨</span> Generate with AI
+                    Generate with AI
                 </button>
             </div>
         </div>
