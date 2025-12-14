@@ -12,10 +12,15 @@ export default function EditQuiz() {
   const [questions, setQuestions] = useState([]);
   
   const [form, setForm] = useState({ 
-    questionDescription: "", option1: "", option2: "", option3: "", option4: "", answer: 1 
+    id: null, questionDescription: "", option1: "", option2: "", option3: "", option4: "", answer: 1 
   });
   const [image, setImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => { loadAllData(); }, [quizId]);
 
@@ -39,12 +44,12 @@ export default function EditQuiz() {
   const saveSettings = async () => {
       try {
           await api.put(`/Quiz/${quizId}`, quizData);
-          alert("Quiz settings saved successfully!");
+          alert("Settings saved.");
       } catch (err) { alert("Failed to save settings"); }
   };
 
   const deleteQuiz = async () => {
-      if(window.confirm("Are you sure? This cannot be undone.")) {
+      if(window.confirm("Are you sure?")) {
           await api.delete(`/Quiz/${quizId}`);
           navigate("/my-quizzes");
       }
@@ -54,12 +59,36 @@ export default function EditQuiz() {
       const file = e.target.files[0];
       setImage(file);
       if(file) setPreviewImage(URL.createObjectURL(file));
-      else setPreviewImage(null);
   };
 
-  const addQuestion = async (e) => {
+  const startEdit = (q) => {
+      setIsEditing(true);
+      setForm({
+          id: q.id,
+          questionDescription: q.questionDescription,
+          option1: q.option1, option2: q.option2, option3: q.option3, option4: q.option4,
+          answer: q.answer
+      });
+      
+      if(q.imageName) {
+          if(q.imageName.startsWith('http')) setPreviewImage(q.imageName);
+          else setPreviewImage(`http://localhost:5198/static/images/${q.imageName}`);
+      } else {
+          setPreviewImage(null);
+      }
+      setImage(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+      setIsEditing(false);
+      setForm({ id: null, questionDescription: "", option1: "", option2: "", option3: "", option4: "", answer: 1 });
+      setImage(null);
+      setPreviewImage(null);
+  };
+
+  const submitQuestion = async (e) => {
     e.preventDefault();
-    
     const fd = new FormData();
     fd.append("QuizId", quizId);
     fd.append("QuestionDescription", form.questionDescription);
@@ -68,20 +97,18 @@ export default function EditQuiz() {
     fd.append("Option3", form.option3);
     fd.append("Option4", form.option4);
     fd.append("Answer", form.answer);
-    
-    if(image) {
-        fd.append("ImageFile", image);
-    }
+    if(image) fd.append("ImageFile", image);
     
     try {
-        await api.post("/Quiz/add-question", fd);
-        setForm({ questionDescription: "", option1: "", option2: "", option3: "", option4: "", answer: 1 });
-        setImage(null);
-        setPreviewImage(null);
+        if(isEditing) {
+            await api.put(`/Quiz/question/${form.id}`, fd);
+        } else {
+            await api.post("/Quiz/add-question", fd);
+        }
+        cancelEdit();
         loadAllData();
     } catch (err) {
-        console.error(err);
-        alert("Failed to add question. Please check all fields.");
+        alert("Failed to save question.");
     }
   };
 
@@ -92,112 +119,119 @@ export default function EditQuiz() {
       }
   };
 
-  if (loading) return <div className="page-wrapper" style={{paddingTop:'100px', textAlign:'center'}}>Loading Quiz Data...</div>;
+  const handleAiGenerate = async () => {
+      if(!aiTopic.trim()) return;
+      setAiLoading(true);
+      try {
+          await api.post("/Quiz/generate-questions-ai", {
+              quizId: parseInt(quizId),
+              topic: aiTopic,
+              count: 5
+          });
+          setAiTopic("");
+          setShowAiModal(false);
+          loadAllData();
+      } catch (err) {
+          alert("AI Generation failed.");
+      } finally {
+          setAiLoading(false);
+      }
+  };
+
+  if (loading) return <div className="page-wrapper" style={{paddingTop:'100px', textAlign:'center'}}>Loading...</div>;
 
   return (
     <div className="page-wrapper">
       <div className="container edit-container">
         
         <div className="edit-header">
-            <button onClick={() => navigate("/my-quizzes")} className="back-link">
-                <span>← Back to Library</span>
-            </button>
+            <button onClick={() => navigate("/my-quizzes")} className="back-link">← Back</button>
             <h1 className="page-title">Edit Quiz</h1>
         </div>
 
         <div className="editor-layout">
-            
             <div className="panel-left">
                 <div className="dash-card">
-                    <h3 className="section-title">General Settings</h3>
-                    <label className="label">Quiz Title</label>
+                    <h3 className="section-title">Settings</h3>
+                    <label className="label">Title</label>
                     <input className="input-styled" value={quizData.title} onChange={e => setQuizData({...quizData, title: e.target.value})} />
-                    
                     <label className="label">Description</label>
                     <textarea className="input-styled" rows="3" value={quizData.description} onChange={e => setQuizData({...quizData, description: e.target.value})} />
-                    
                     <div className="visibility-box">
                         <label className="label">Visibility</label>
-                        <div 
-                            className={`toggle-switch ${quizData.isPublic ? 'on' : 'off'}`} 
-                            onClick={() => setQuizData({...quizData, isPublic: !quizData.isPublic})}
-                        >
+                        <div className={`toggle-switch ${quizData.isPublic ? 'on' : 'off'}`} onClick={() => setQuizData({...quizData, isPublic: !quizData.isPublic})}>
                             <div className="toggle-knob"></div>
                         </div>
-                        <span className="vis-status">{quizData.isPublic ? "Public (In Community)" : "Private (Only You)"}</span>
+                        <span className="vis-status">{quizData.isPublic ? "Public" : "Private"}</span>
                     </div>
-
                     <div className="btn-group">
-                        <button className="btn-main" onClick={saveSettings}>Save Changes</button>
-                        <button className="btn-outline danger" onClick={deleteQuiz}>Delete Quiz</button>
+                        <button className="btn-main" onClick={saveSettings}>Save</button>
+                        <button className="btn-outline danger" onClick={deleteQuiz}>Delete</button>
                     </div>
                 </div>
             </div>
 
             <div className="panel-center">
                 <div className="dash-card">
-                    <h3 className="section-title">Add Question</h3>
-                    <form onSubmit={addQuestion}>
-                        <label className="label">Question Text</label>
-                        <input className="input-styled" placeholder="e.g. Which planet is red?" value={form.questionDescription} onChange={e => setForm({...form, questionDescription: e.target.value})} required />
-                        
-                        <label className="label">Options</label>
+                    <div className="q-add-header">
+                        <h3 className="section-title" style={{marginBottom:0}}>
+                            {isEditing ? "Edit Question" : "Add Question"}
+                        </h3>
+                        {!isEditing && <button className="ai-btn" onClick={() => setShowAiModal(true)}>AI Add Questions</button>}
+                    </div>
+                    <form onSubmit={submitQuestion}>
+                        <input className="input-styled" placeholder="Question Text" value={form.questionDescription} onChange={e => setForm({...form, questionDescription: e.target.value})} required />
                         <div className="options-grid-mini">
                             {[1,2,3,4].map(n => (
                                 <input key={n} className="input-styled" placeholder={`Option ${n}`} value={form[`option${n}`]} onChange={e => setForm({...form, [`option${n}`]: e.target.value})} required />
                             ))}
                         </div>
-                        
                         <div className="form-row">
                             <div style={{flex:1}}>
-                                <label className="label">Correct Answer</label>
                                 <select className="input-styled" value={form.answer} onChange={e => setForm({...form, answer: Number(e.target.value)})}>
-                                    {[1,2,3,4].map(n => <option key={n} value={n}>Option {n}</option>)}
+                                    {[1,2,3,4].map(n => <option key={n} value={n}>Option {n} is correct</option>)}
                                 </select>
                             </div>
                             <div style={{flex:1}}>
-                                <label className="label">Image (Optional)</label>
                                 <label className="custom-file-upload">
                                     <input type="file" onChange={handleImageChange} accept="image/*" />
-                                    {image ? "Change File" : "Choose File"}
+                                    {image ? "Image Selected" : "Upload Image"}
                                 </label>
-                                {image && <span style={{fontSize:'0.8rem', color:'var(--success)', display:'block', marginTop:'5px'}}>✓ {image.name}</span>}
                             </div>
                         </div>
-
-                        <button className="btn-main" type="submit">+ Add Question</button>
+                        <div style={{display:'flex', gap:'10px'}}>
+                            <button className="btn-main" type="submit">{isEditing ? "Update Question" : "Add Manually"}</button>
+                            {isEditing && <button type="button" className="btn-outline" onClick={cancelEdit}>Cancel</button>}
+                        </div>
                     </form>
                 </div>
 
                 <div className="questions-list-section">
                     <h3 className="list-title">Questions ({questions.length})</h3>
-                    <div className="questions-grid-row">
-                        {questions.length === 0 && <p className="empty-text">No questions yet.</p>}
-                        {questions.map((q, i) => (
-                            <div key={q.id} className="q-list-item">
-                                <div className="q-content">
-                                    <span className="q-number">#{i+1}</span>
+                    {questions.map((q, i) => (
+                        <div key={q.id} className="q-list-item">
+                            <div className="q-content">
+                                <span className="q-number">#{i+1}</span>
+                                <div>
                                     <span className="q-text">{q.questionDescription}</span>
+                                    {q.imageName && <span style={{fontSize:'0.7rem', color:'#6366f1', marginLeft:'10px'}}>(Has Image)</span>}
                                 </div>
-                                <button className="btn-icon-del" onClick={() => deleteQuestion(q.id)} title="Delete">
-                                    🗑
-                                </button>
                             </div>
-                        ))}
-                    </div>
+                            <div style={{display:'flex', gap:'10px'}}>
+                                <button className="btn-icon-edit" onClick={() => startEdit(q)}>✎</button>
+                                <button className="btn-icon-del" onClick={() => deleteQuestion(q.id)}>🗑</button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
             <div className="panel-right">
                 <div className="dash-card preview-card">
-                    <h3 className="section-title" style={{textAlign:'center', fontSize:'0.9rem'}}>Card Preview</h3>
+                    <h3 className="section-title" style={{textAlign:'center'}}>Live Preview</h3>
                     <div className="preview-content">
-                        {previewImage ? (
-                            <img src={previewImage} alt="Preview" className="preview-img-real" />
-                        ) : (
-                            <div className="preview-placeholder">No Image</div>
-                        )}
-                        <h4 className="preview-q-text">{form.questionDescription || "Question text..."}</h4>
+                        {previewImage ? <img src={previewImage} className="preview-img-real" alt="" /> : <div className="preview-placeholder">Image Preview</div>}
+                        <h4 className="preview-q-text">{form.questionDescription || "Question text will appear here..."}</h4>
                         <div className="preview-opts">
                             {[1,2,3,4].map(n => (
                                 <div key={n} className={`preview-opt-row ${form.answer === n ? 'correct' : ''}`}>
@@ -209,8 +243,31 @@ export default function EditQuiz() {
                     </div>
                 </div>
             </div>
-
         </div>
+
+        {showAiModal && (
+            <div className="modal-overlay">
+                <div className="ai-modal">
+                    <div className="ai-header">
+                        <h2>AI Question Generator</h2>
+                        <button className="close-btn-modal" onClick={() => setShowAiModal(false)}>✕</button>
+                    </div>
+                    <div className="ai-body">
+                        <p>Topic to add questions for:</p>
+                        <input 
+                            className="input-styled" 
+                            placeholder="e.g. Physics, Pop Culture..." 
+                            value={aiTopic}
+                            onChange={e => setAiTopic(e.target.value)}
+                            autoFocus
+                        />
+                        <button className="btn-main ai-submit" onClick={handleAiGenerate} disabled={aiLoading}>
+                            {aiLoading ? "Generating..." : "Generate 5 Questions"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
       </div>
     </div>
   );
