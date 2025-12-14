@@ -10,6 +10,7 @@ import EditQuiz from "./pages/EditQuiz";
 import Lobby from "./pages/Lobby";
 import HostGame from "./pages/HostGame";
 import PlayerGame from "./pages/PlayerGame";
+import Social from "./pages/Social";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const GOOGLE_CLIENT_ID = "93845720486-edfdn06hfn6kdhku9rfp6la69b63pidf.apps.googleusercontent.com";
@@ -28,6 +29,7 @@ export default function App() {
             
             <Route path="/my-quizzes" element={<MyQuizzes />} />
             <Route path="/community" element={<CommunityLibrary />} />
+            <Route path="/social" element={<Social />} />
             <Route path="/edit-quiz/:quizId" element={<EditQuiz />} />
             
             <Route path="/lobby/:roomCode" element={<Lobby />} />

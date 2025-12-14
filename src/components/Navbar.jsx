@@ -21,7 +21,8 @@ export default function Navbar() {
       <div className="nav-left">
           <Link to="/dashboard" className="nav-logo">MiniQuiz</Link>
           <Link to="/my-quizzes" className="nav-link">My Quizzes</Link>
-          <Link to="/community" className="nav-link">Community Library</Link>
+          <Link to="/community" className="nav-link">Community</Link>
+          <Link to="/social" className="nav-link">Social</Link>
       </div>
       <div className="nav-user">
         <div className="nav-info">
