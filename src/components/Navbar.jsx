@@ -14,7 +14,7 @@ export default function Navbar() {
   if (!user) return null;
 
   const currentAvatar = sessionStorage.getItem("currentAvatar") || user.avatarUrl;
-  const fallbackAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+  const fallbackAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`;
 
   return (
     <nav className="navbar">

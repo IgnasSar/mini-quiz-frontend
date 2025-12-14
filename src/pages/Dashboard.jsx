@@ -4,12 +4,12 @@ import api from "../api";
 import "../styles/Dashboard.css";
 
 const AVATARS = [
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Cal",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Dora",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Elmo",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=Felix",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=Bob",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=Cal",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=Dora",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=Elmo",
 ];
 
 export default function Dashboard() {
