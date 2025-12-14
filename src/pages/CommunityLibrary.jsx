@@ -6,9 +6,9 @@ import "../styles/Community.css";
 export default function CommunityLibrary() {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [previewQuestions, setPreviewQuestions] = useState([]);
   const [loadingPreview, setLoadingPreview] = useState(false);
@@ -20,14 +20,16 @@ export default function CommunityLibrary() {
     try {
         const res = await api.get(`/Library/public?search=${term}`);
         setQuizzes(res.data);
+        
+        if(!term) {
+            const recRes = await api.get("/Recommendation/feed");
+            setRecommendations(recRes.data);
+        }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
-  const handleSearch = (e) => {
-      setSearch(e.target.value);
-      load(e.target.value);
-  };
+  const handleSearch = (e) => { setSearch(e.target.value); load(e.target.value); };
 
   const openPreview = async (quiz) => {
       setSelectedQuiz(quiz);
@@ -35,26 +37,16 @@ export default function CommunityLibrary() {
       try {
           const res = await api.get(`/Library/public/${quiz.id}`);
           setPreviewQuestions(res.data.questions);
-      } catch (e) {
-          console.error(e);
-          setPreviewQuestions([]);
-      } finally {
-          setLoadingPreview(false);
-      }
+      } catch (e) { console.error(e); setPreviewQuestions([]); } 
+      finally { setLoadingPreview(false); }
   };
 
-  const closePreview = () => {
-      setSelectedQuiz(null);
-      setPreviewQuestions([]);
-  };
+  const closePreview = () => { setSelectedQuiz(null); setPreviewQuestions([]); };
 
   const handleClone = async () => {
       if(!selectedQuiz) return;
       if(!window.confirm(`Clone "${selectedQuiz.title}" to your library?`)) return;
-      try {
-          await api.post(`/Library/clone/${selectedQuiz.id}`);
-          navigate("/my-quizzes");
-      } catch (e) { alert("Failed to clone"); }
+      try { await api.post(`/Library/clone/${selectedQuiz.id}`); navigate("/my-quizzes"); } catch (e) { alert("Failed to clone"); }
   };
 
   return (
@@ -62,43 +54,61 @@ export default function CommunityLibrary() {
       <div className="container">
         <h1 className="community-header">Community Library</h1>
         
-        <input 
-            className="search-bar" 
-            placeholder="Search for quizzes..." 
-            value={search} 
-            onChange={handleSearch} 
-        />
+        <input className="search-bar" placeholder="Search for quizzes..." value={search} onChange={handleSearch} />
 
         {loading ? <div className="loader">Loading...</div> : (
-            <div className="library-grid">
-                {quizzes.length === 0 && <p className="no-results">No public quizzes found.</p>}
-                {quizzes.map(q => (
-                    <div key={q.id} className="lib-card" onClick={() => openPreview(q)}>
-                        <div className="lib-content">
-                            <h3 className="lib-title">{q.title}</h3>
-                            <p className="lib-creator">By {q.creatorName}</p>
-                            <p className="lib-desc">{q.description || "No description"}</p>
-                            <div className="lib-stats">
-                                <span className="lib-badge">{q.questionCount} Qs</span>
-                                <span className="lib-play-count">▶ {q.timesPlayed} plays</span>
+            <>
+                {recommendations.length > 0 && !search && (
+                    <>
+                        <h2 className="section-title">Recommended For You</h2>
+                        <div className="recommendation-grid">
+                             {recommendations.map(q => (
+                                <div key={q.id} className="lib-card featured" onClick={() => openPreview(q)}>
+                                    <div className="top-pick-label">Top Pick</div>
+                                    <div className="lib-content">
+                                        <h3 className="lib-title">{q.title}</h3>
+                                        <p className="lib-creator">By {q.creatorName}</p>
+                                        <p className="lib-desc">{q.description || "Curated just for you based on your play style."}</p>
+                                        <div className="lib-stats">
+                                            <span className="lib-badge">{q.questionCount} Qs</span>
+                                            <span className="lib-play-count">▶ {q.timesPlayed}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                             ))}
+                        </div>
+                    </>
+                )}
+
+                <h2 className="section-title">All Quizzes</h2>
+                <div className="library-grid">
+                    {quizzes.length === 0 && <p className="no-results">No public quizzes found.</p>}
+                    {quizzes.map(q => (
+                        <div key={q.id} className="lib-card" onClick={() => openPreview(q)}>
+                            <div className="lib-content">
+                                <h3 className="lib-title">{q.title}</h3>
+                                <p className="lib-creator">By {q.creatorName}</p>
+                                <p className="lib-desc">{q.description || "No description provided."}</p>
+                                <div className="lib-stats">
+                                    <span className="lib-badge">{q.questionCount} Qs</span>
+                                    <span className="lib-play-count">▶ {q.timesPlayed} plays</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            </>
         )}
 
         {selectedQuiz && (
             <div className="modal-overlay" onClick={closePreview}>
                 <div className="modal-content" onClick={e => e.stopPropagation()}>
                     <button className="modal-close" onClick={closePreview}>✕</button>
-                    
                     <div className="modal-header">
                         <h2>{selectedQuiz.title}</h2>
                         <p className="modal-creator">Created by {selectedQuiz.creatorName}</p>
                         <p className="modal-desc">{selectedQuiz.description}</p>
                     </div>
-
                     <div className="modal-body">
                         <h3>Questions Preview</h3>
                         {loadingPreview ? <p>Loading questions...</p> : (
@@ -112,14 +122,9 @@ export default function CommunityLibrary() {
                             </div>
                         )}
                     </div>
-
                     <div className="modal-footer">
-                        <button className="btn-main" onClick={() => navigate(`/lobby/new?quizId=${selectedQuiz.id}`)}>
-                            Play Now
-                        </button>
-                        <button className="btn-outline" onClick={handleClone}>
-                            Clone & Edit
-                        </button>
+                        <button className="btn-main" onClick={() => navigate(`/lobby/new?quizId=${selectedQuiz.id}`)}>Play Now</button>
+                        <button className="btn-outline" onClick={handleClone}>Clone & Edit</button>
                     </div>
                 </div>
             </div>
