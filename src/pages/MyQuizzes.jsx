@@ -33,7 +33,6 @@ export default function MyQuizzes() {
           navigate(`/edit-quiz/${res.data.id}`);
       } catch (err) {
           alert("AI Generation failed. Please try again.");
-          console.error(err);
       } finally {
           setAiLoading(false);
       }
@@ -43,9 +42,8 @@ export default function MyQuizzes() {
     <div className="page-wrapper">
       <div className="container">
         
-        <div className="dash-card" style={{marginBottom:'2rem', width: '100%', maxWidth:'800px'}}>
+        <div className="create-header-card">
             <h2 className="dash-title">Create New Quiz</h2>
-            
             <div className="create-actions-row">
                 <div className="manual-create">
                     <input 
@@ -54,32 +52,35 @@ export default function MyQuizzes() {
                         value={newTitle} 
                         onChange={e => setNewTitle(e.target.value)} 
                     />
-                    <button className="btn-main" onClick={create}>Create Manually</button>
+                    <button className="btn-main" style={{width:'auto', padding:'0 1.5rem', borderRadius:'8px'}} onClick={create}>CREATE</button>
                 </div>
                 
-                <div className="divider-vertical"></div>
-
                 <button className="btn-ai-standard" onClick={() => setShowAiModal(true)}>
-                    Generate with AI
+                    <span>✨</span> Generate with AI
                 </button>
             </div>
         </div>
 
-        <div className="dash-card" style={{width: '100%', maxWidth:'800px'}}>
-            <h2 className="dash-title">Your Library</h2>
-            {quizzes.length === 0 && <p style={{color:'var(--text-muted)', textAlign:'center'}}>No quizzes created yet.</p>}
-            <div className="quiz-list">
+        <div className="dash-card" style={{width: '100%', maxWidth:'100%'}}>
+            <h2 className="dash-title" style={{marginBottom:'2rem', textAlign:'left', paddingLeft:'0.5rem'}}>Your Library</h2>
+            {quizzes.length === 0 && <p style={{color:'var(--text-muted)', textAlign:'center', padding:'2rem'}}>No quizzes created yet.</p>}
+            
+            <div className="quiz-grid">
                 {quizzes.map(q => (
-                    <div key={q.id} className="quiz-item">
-                        <div className="quiz-info">
-                            <div className="quiz-item-title">{q.title}</div>
-                            <div className="quiz-item-meta">
-                                {q.questionCount} Questions • {q.isPublic ? "Public" : "Private"} • {q.timesPlayed} Plays
-                            </div>
+                    <div key={q.id} className="quiz-card">
+                        <div className="quiz-card-header">
+                            <div className="quiz-card-title">{q.title}</div>
+                            <span className="quiz-status-badge">{q.isPublic ? "Public" : "Private"}</span>
                         </div>
-                        <button className="btn-outline edit-btn" onClick={() => navigate(`/edit-quiz/${q.id}`)}>
-                            Edit
-                        </button>
+                        <div className="quiz-card-stats">
+                            <span>{q.questionCount} Questions</span>
+                            <span>{q.timesPlayed} Plays</span>
+                        </div>
+                        <div className="quiz-card-actions">
+                            <button className="edit-btn-card" onClick={() => navigate(`/edit-quiz/${q.id}`)}>
+                                Edit Quiz
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
